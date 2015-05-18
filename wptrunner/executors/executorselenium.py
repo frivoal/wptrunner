@@ -165,11 +165,12 @@ class SeleniumRun(object):
 
 class SeleniumTestharnessExecutor(TestharnessExecutor):
     def __init__(self, browser, server_config, timeout_multiplier=1,
-                 close_after_done=True, capabilities=None, debug_info=None):
+                 close_after_done=True, capabilities=None, debug_info=None, run_vivliostyle=False):
         """Selenium-based executor for testharness.js tests"""
         TestharnessExecutor.__init__(self, browser, server_config,
                                      timeout_multiplier=timeout_multiplier,
-                                     debug_info=debug_info)
+                                     debug_info=debug_info,
+                                     run_vivliostyle=run_vivliostyle)
         self.protocol = SeleniumProtocol(self, browser, capabilities)
         with open(os.path.join(here, "testharness_webdriver.js")) as f:
             self.script = f.read()
@@ -183,7 +184,7 @@ class SeleniumTestharnessExecutor(TestharnessExecutor):
         self.protocol.load_runner(new_protocol)
 
     def do_test(self, test):
-        url = self.test_url(test)
+        url = self.test_url(test, is_testcase=True)
 
         success, data = SeleniumRun(self.do_testharness,
                                     self.protocol.webdriver,
@@ -206,14 +207,15 @@ class SeleniumTestharnessExecutor(TestharnessExecutor):
 class SeleniumRefTestExecutor(RefTestExecutor):
     def __init__(self, browser, server_config, timeout_multiplier=1,
                  screenshot_cache=None, close_after_done=True,
-                 debug_info=None, capabilities=None):
+                 debug_info=None, capabilities=None, run_vivliostyle=False):
         """Selenium WebDriver-based executor for reftests"""
         RefTestExecutor.__init__(self,
                                  browser,
                                  server_config,
                                  screenshot_cache=screenshot_cache,
                                  timeout_multiplier=timeout_multiplier,
-                                 debug_info=debug_info)
+                                 debug_info=debug_info,
+                                 run_vivliostyle=run_vivliostyle)
         self.protocol = SeleniumProtocol(self, browser,
                                          capabilities=capabilities)
         self.implementation = RefTestImplementation(self)
@@ -247,10 +249,10 @@ class SeleniumRefTestExecutor(RefTestExecutor):
 
         return self.convert_result(test, result)
 
-    def screenshot(self, test):
+    def screenshot(self, test, is_testcase):
         return SeleniumRun(self._screenshot,
                            self.protocol.webdriver,
-                           self.test_url(test),
+                           self.test_url(test, is_testcase=is_testcase),
                            test.timeout).run()
 
     def _screenshot(self, webdriver, url, timeout):

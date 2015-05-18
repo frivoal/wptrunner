@@ -270,11 +270,12 @@ class MarionetteRun(object):
 
 class MarionetteTestharnessExecutor(TestharnessExecutor):
     def __init__(self, browser, server_config, timeout_multiplier=1, close_after_done=True,
-                 debug_info=None):
+                 debug_info=None, run_vivliostyle=False):
         """Marionette-based executor for testharness.js tests"""
         TestharnessExecutor.__init__(self, browser, server_config,
                                      timeout_multiplier=timeout_multiplier,
-                                     debug_info=debug_info)
+                                     debug_info=debug_info,
+                                     run_vivliostyle=run_vivliostyle)
 
         self.protocol = MarionetteProtocol(self, browser)
         self.script = open(os.path.join(here, "testharness_marionette.js")).read()
@@ -302,7 +303,7 @@ class MarionetteTestharnessExecutor(TestharnessExecutor):
         success, data = MarionetteRun(self.logger,
                                       self.do_testharness,
                                       self.protocol.marionette,
-                                      self.test_url(test),
+                                      self.test_url(test, is_testcase=True),
                                       timeout).run()
         if success:
             return self.convert_result(test, data)
@@ -330,14 +331,15 @@ class MarionetteTestharnessExecutor(TestharnessExecutor):
 
 class MarionetteRefTestExecutor(RefTestExecutor):
     def __init__(self, browser, server_config, timeout_multiplier=1,
-                 screenshot_cache=None, close_after_done=True, debug_info=None):
+                 screenshot_cache=None, close_after_done=True, debug_info=None, run_vivliostyle=False):
         """Marionette-based executor for reftests"""
         RefTestExecutor.__init__(self,
                                  browser,
                                  server_config,
                                  screenshot_cache=screenshot_cache,
                                  timeout_multiplier=timeout_multiplier,
-                                 debug_info=debug_info)
+                                 debug_info=debug_info,
+                                 run_vivliostyle=run_vivliostyle)
         self.protocol = MarionetteProtocol(self, browser)
         self.implementation = RefTestImplementation(self)
         self.close_after_done = close_after_done
@@ -371,10 +373,10 @@ class MarionetteRefTestExecutor(RefTestExecutor):
 
         return self.convert_result(test, result)
 
-    def screenshot(self, test):
+    def screenshot(self, test, is_testcase):
         timeout =  self.timeout_multiplier * test.timeout if self.debug_info is None else None
 
-        test_url = self.test_url(test)
+        test_url = self.test_url(test, is_testcase=is_testcase)
 
         return MarionetteRun(self.logger,
                              self._screenshot,

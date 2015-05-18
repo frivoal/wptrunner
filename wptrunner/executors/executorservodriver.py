@@ -138,9 +138,9 @@ def timeout_func(timeout):
 
 class ServoWebDriverTestharnessExecutor(TestharnessExecutor):
     def __init__(self, browser, server_config, timeout_multiplier=1,
-                 close_after_done=True, capabilities=None, debug_info=None):
+                 close_after_done=True, capabilities=None, debug_info=None, run_vivliostyle=False):
         TestharnessExecutor.__init__(self, browser, server_config, timeout_multiplier=1,
-                                     debug_info=None)
+                                     debug_info=None, run_vivliostyle=run_vivliostyle)
         self.protocol = ServoWebDriverProtocol(self, browser, capabilities=capabilities)
         with open(os.path.join(here, "testharness_servodriver.js")) as f:
             self.script = f.read()
@@ -152,7 +152,7 @@ class ServoWebDriverTestharnessExecutor(TestharnessExecutor):
         return self.protocol.is_alive()
 
     def do_test(self, test):
-        url = self.test_url(test)
+        url = self.test_url(test, is_testcase=True)
 
         success, data = ServoWebDriverRun(self.do_testharness,
                                           self.protocol.session,
@@ -183,14 +183,15 @@ class TimeoutError(Exception):
 
 class ServoWebDriverRefTestExecutor(RefTestExecutor):
     def __init__(self, browser, server_config, timeout_multiplier=1,
-                 screenshot_cache=None, capabilities=None, debug_info=None):
+                 screenshot_cache=None, capabilities=None, debug_info=None, run_vivliostyle=False):
         """Selenium WebDriver-based executor for reftests"""
         RefTestExecutor.__init__(self,
                                  browser,
                                  server_config,
                                  screenshot_cache=screenshot_cache,
                                  timeout_multiplier=timeout_multiplier,
-                                 debug_info=debug_info)
+                                 debug_info=debug_info,
+                                 run_vivliostyle=run_vivliostyle)
         self.protocol = ServoWebDriverProtocol(self, browser,
                                                capabilities=capabilities)
         self.implementation = RefTestImplementation(self)
@@ -216,11 +217,11 @@ class ServoWebDriverRefTestExecutor(RefTestExecutor):
             message += traceback.format_exc(e)
             return test.result_cls("ERROR", message), []
 
-    def screenshot(self, test):
+    def screenshot(self, test, is_testcase):
         timeout = test.timeout * self.timeout_multiplier if self.debug_info is None else None
         return ServoWebDriverRun(self._screenshot,
                                  self.protocol.session,
-                                 self.test_url(test),
+                                 self.test_url(test, is_testcase=is_testcase),
                                  timeout).run()
 
     def _screenshot(self, session, url, timeout):

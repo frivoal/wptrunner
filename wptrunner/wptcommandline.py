@@ -85,6 +85,9 @@ def create_parser(product_choices=None):
     parser.add_argument("--list-disabled", action="store_true",
                         default=False,
                         help="List the tests that are disabled on the current platform")
+    parser.add_argument("--run-vivliostyle", action="store_true",
+                        default=False,
+                        help="Run testcases using Vivliostyle.js")
 
     test_selection_group = parser.add_argument_group("Test Selection")
     test_selection_group.add_argument("--test-types", action="store",

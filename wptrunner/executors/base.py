@@ -21,7 +21,8 @@ def executor_kwargs(test_type, server_config, cache_manager, **kwargs):
 
     executor_kwargs = {"server_config": server_config,
                        "timeout_multiplier": timeout_multiplier,
-                       "debug_info": kwargs["debug_info"]}
+                       "debug_info": kwargs["debug_info"],
+                       "run_vivliostyle": kwargs["run_vivliostyle"]}
 
     if test_type == "reftest":
         executor_kwargs["screenshot_cache"] = cache_manager.dict()
@@ -81,7 +82,7 @@ class TestExecutor(object):
     convert_result = None
 
     def __init__(self, browser, server_config, timeout_multiplier=1,
-                 debug_info=None):
+                 debug_info=None, run_vivliostyle=False):
         """Abstract Base class for object that actually executes the tests in a
         specific browser. Typically there will be a different TestExecutor
         subclass for each test type and method of executing tests.
@@ -92,12 +93,14 @@ class TestExecutor(object):
                               form stored in TestEnvironment.external_config
         :param timeout_multiplier: Multiplier relative to base timeout to use
                                    when setting test timeout.
+        :param run_vivliostyle: Boolean indicating whether tests are run by Vivliostyle.js or not
         """
         self.runner = None
         self.browser = browser
         self.server_config = server_config
         self.timeout_multiplier = timeout_multiplier
         self.debug_info = debug_info
+        self.run_vivliostyle = run_vivliostyle
         self.last_environment = {"protocol": "http",
                                  "prefs": []}
         self.protocol = None # This must be set in subclasses
@@ -148,8 +151,13 @@ class TestExecutor(object):
                                self.server_config["host"],
                                self.server_config["ports"][protocol][0])
 
-    def test_url(self, test):
-        return urlparse.urljoin(self.server_url(test.environment["protocol"]), test.url)
+    def test_url(self, test, is_testcase):
+        if is_testcase and self.run_vivliostyle:
+            app_url = urlparse.urljoin(self.server_url(test.environment["protocol"]), "/vivliostyle.js/test/wpt/wpt-vivliostyle.html")
+            test_url = urlparse.urljoin(self.server_url(test.environment["protocol"]), test.url)
+            return app_url + "?x=" + test_url
+        else:
+            return urlparse.urljoin(self.server_url(test.environment["protocol"]), test.url)
 
     @abstractmethod
     def do_test(self, test):
@@ -182,10 +190,11 @@ class RefTestExecutor(TestExecutor):
     convert_result = reftest_result_converter
 
     def __init__(self, browser, server_config, timeout_multiplier=1, screenshot_cache=None,
-                 debug_info=None):
+                 debug_info=None, run_vivliostyle=False):
         TestExecutor.__init__(self, browser, server_config,
                               timeout_multiplier=timeout_multiplier,
-                              debug_info=debug_info)
+                              debug_info=debug_info,
+                              run_vivliostyle=run_vivliostyle)
 
         self.screenshot_cache = screenshot_cache
 
@@ -204,11 +213,11 @@ class RefTestImplementation(object):
     def logger(self):
         return self.executor.logger
 
-    def get_hash(self, test):
+    def get_hash(self, test, is_testcase):
         timeout = test.timeout * self.timeout_multiplier
 
         if test.url not in self.screenshot_cache:
-            success, data = self.executor.screenshot(test)
+            success, data = self.executor.screenshot(test, is_testcase=is_testcase)
 
             if not success:
                 return False, data
@@ -245,7 +254,7 @@ class RefTestImplementation(object):
             nodes, relation = stack.pop()
 
             for i, node in enumerate(nodes):
-                success, data = self.get_hash(node)
+                success, data = self.get_hash(node, is_testcase=(i == 0))
                 if success is False:
                     return {"status": data[0], "message": data[1]}
 
@@ -262,7 +271,7 @@ class RefTestImplementation(object):
 
         for i, (node, screenshot) in enumerate(zip(nodes, screenshots)):
             if screenshot is None:
-                success, screenshot = self.retake_screenshot(node)
+                success, screenshot = self.retake_screenshot(node, is_testcase=(i == 0))
                 if success:
                     screenshots[i] = screenshot
 
@@ -273,8 +282,8 @@ class RefTestImplementation(object):
                 "message": "\n".join(self.message),
                 "extra": {"reftest_screenshots": log_data}}
 
-    def retake_screenshot(self, node):
-        success, data = self.executor.screenshot(node)
+    def retake_screenshot(self, node, is_testcase):
+        success, data = self.executor.screenshot(node, is_testcase=is_testcase)
         if not success:
             return False, data
 

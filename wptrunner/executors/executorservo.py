@@ -41,10 +41,11 @@ class ServoTestharnessExecutor(ProcessTestExecutor):
     convert_result = testharness_result_converter
 
     def __init__(self, browser, server_config, timeout_multiplier=1, debug_info=None,
-                 pause_after_test=False):
+                 pause_after_test=False, run_vivliostyle=False):
         ProcessTestExecutor.__init__(self, browser, server_config,
                                      timeout_multiplier=timeout_multiplier,
-                                     debug_info=debug_info)
+                                     debug_info=debug_info,
+                                     run_vivliostyle=run_vivliostyle)
         self.pause_after_test = pause_after_test
         self.result_data = None
         self.result_flag = None
@@ -62,7 +63,7 @@ class ServoTestharnessExecutor(ProcessTestExecutor):
         self.result_data = None
         self.result_flag = threading.Event()
 
-        debug_args, command = browser_command(self.binary, ["--cpu", "--hard-fail", "-z", self.test_url(test)],
+        debug_args, command = browser_command(self.binary, ["--cpu", "--hard-fail", "-z", self.test_url(test, is_testcase=True)],
                                               self.debug_info)
 
         self.command = command
@@ -159,13 +160,14 @@ class ServoRefTestExecutor(ProcessTestExecutor):
     convert_result = reftest_result_converter
 
     def __init__(self, browser, server_config, binary=None, timeout_multiplier=1,
-                 screenshot_cache=None, debug_info=None, pause_after_test=False):
+                 screenshot_cache=None, debug_info=None, pause_after_test=False, run_vivliostyle=False):
 
         ProcessTestExecutor.__init__(self,
                                      browser,
                                      server_config,
                                      timeout_multiplier=timeout_multiplier,
-                                     debug_info=debug_info)
+                                     debug_info=debug_info,
+                                     run_vivliostyle=run_vivliostyle)
 
         self.protocol = Protocol(self, browser)
         self.screenshot_cache = screenshot_cache
@@ -181,8 +183,8 @@ class ServoRefTestExecutor(ProcessTestExecutor):
         os.rmdir(self.tempdir)
         ProcessTestExecutor.teardown(self)
 
-    def screenshot(self, test):
-        full_url = self.test_url(test)
+    def screenshot(self, test, is_testcase):
+        full_url = self.test_url(test, is_testcase=is_testcase)
 
         with TempFilename(self.tempdir) as output_path:
             self.command = [self.binary, "--cpu", "--hard-fail", "--exit",
