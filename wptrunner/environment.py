@@ -135,7 +135,7 @@ class RemoteServerEnvironment(BaseEnvironment):
 
 class LocalServerEnvironment(BaseEnvironment):
     def __init__(self, *args, **kwargs):
-        BaseEnvironment.__init__(self, *args, **kwawrgs)
+        BaseEnvironment.__init__(self, *args, **kwargs)
         self.routes = self.get_routes()
 
     def __enter__(self):
@@ -151,7 +151,7 @@ class LocalServerEnvironment(BaseEnvironment):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        BaseEnvironment.__exit__(self)
+        BaseEnvironment.__exit__(self, exc_type, exc_val, exc_tb)
         self.process_interrupts()
         self.ssl_env.__exit__(exc_type, exc_val, exc_tb)
 

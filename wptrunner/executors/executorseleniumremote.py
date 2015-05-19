@@ -23,7 +23,8 @@ from .base import (ExecutorException,
                    strip_server)
 from .executorselenium import (SeleniumProtocol,
                                SeleniumTestharnessExecutor,
-                               SeleniumRefTestExecutor)
+                               SeleniumRefTestExecutor,
+                               SeleniumRun)
 from ..testrunner import Stop
 
 
