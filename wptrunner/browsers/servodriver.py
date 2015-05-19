@@ -12,6 +12,7 @@ from .base import Browser, require_arg, get_free_port, browser_command, Executor
 from ..executors import executor_kwargs as base_executor_kwargs
 from ..executors.executorservodriver import (ServoWebDriverTestharnessExecutor,
                                              ServoWebDriverRefTestExecutor)
+from ..environment import LocalServerEnvironment
 
 here = os.path.join(os.path.split(__file__)[0])
 
@@ -20,6 +21,7 @@ __wptrunner__ = {"product": "servodriver",
                  "browser": "ServoWebDriverBrowser",
                  "executor": {"testharness": "ServoWebDriverTestharnessExecutor",
                               "reftest": "ServoWebDriverRefTestExecutor"},
+                 "env": "LocalServerEnvironment",
                  "browser_kwargs": "browser_kwargs",
                  "executor_kwargs": "executor_kwargs",
                  "env_options": "env_options"}
@@ -33,7 +35,7 @@ hosts_text = """127.0.0.1 web-platform.test
 """
 
 
-def check_args(**kwargs):
+def check_args(kwargs):
     require_arg(kwargs, "binary")
 
 
