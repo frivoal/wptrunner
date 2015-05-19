@@ -32,4 +32,5 @@ product_list = ["b2g",
                 "firefox",
                 "servo",
                 "servodriver",
-                "sauce"]
+                "sauce",
+                "sauceconnect"]
