@@ -42,10 +42,10 @@ class SeleniumRemoteProtocol(SeleniumProtocol):
 
 class SeleniumRemoteTestharnessExecutor(SeleniumTestharnessExecutor):
     def __init__(self, browser, server_config, timeout_multiplier=1,
-                 close_after_done=True, capabilities=None, debug_info=None):
+                 close_after_done=True, capabilities=None, debug_info=None, run_vivliostyle=False):
         SeleniumTestharnessExecutor.__init__(self, browser, server_config, timeout_multiplier=1,
                                              close_after_done=True, capabilities=None,
-                                             debug_info=None)
+                                             debug_info=None, run_vivliostyle=run_vivliostyle)
         self.protocol = SeleniumRemoteProtocol(self, browser, capabilities)
         self.script = None
 
@@ -87,10 +87,10 @@ class SeleniumRemoteRefTestExecutor(SeleniumRefTestExecutor):
 
         return self.convert_result(test, result)
 
-    def screenshot(self, test):
+    def screenshot(self, test, is_testcase):
         return SeleniumRun(self._screenshot,
                            self.protocol.webdriver,
-                           self.test_url(test),
+                           self.test_url(test, is_testcase=is_testcase),
                            test.timeout).run()
 
     def _screenshot(self, webdriver, url, timeout):
