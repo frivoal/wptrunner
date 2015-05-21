@@ -244,6 +244,7 @@ class SeleniumRefTestExecutor(RefTestExecutor):
             self.protocol.webdriver.execute_script(self.script)
             self.protocol.webdriver.switch_to_window(
                 self.protocol.webdriver.window_handles[-1])
+            self.protocol.webdriver.set_window_size(800, 600)
             self.has_window = True
 
         result = self.implementation.run_test(test)
