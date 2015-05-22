@@ -50,6 +50,11 @@ def read_sauce_config(config_path):
     url_parts[1] = full_netloc
     data["url"] = urlparse.urlunsplit(url_parts)
 
+    if config.has_option("sauceconnect", "tunnelIdentifier"):
+        tunnelIdentifier = config.get("sauceconnect", "tunnelIdentifier")
+        if tunnelIdentifier:
+            data["capabilities"]["tunnelIdentifier"] = tunnelIdentifier
+
     data["browser"] = config.get("browser", "name")
     data["capabilities"]["platform"] = config.get("browser", "platform")
     data["capabilities"]["version"] = config.get("browser", "version")
