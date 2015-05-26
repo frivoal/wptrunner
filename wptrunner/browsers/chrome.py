@@ -20,7 +20,7 @@ __wptrunner__ = {"product": "chrome",
                  "env_options": "env_options"}
 
 
-def check_args(**kwargs):
+def check_args(kwargs):
     require_arg(kwargs, "webdriver_binary")
 
 
