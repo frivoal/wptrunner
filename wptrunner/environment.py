@@ -10,7 +10,7 @@ import socket
 import sys
 import time
 
-from mozlog.structured import get_default_logger, handlers
+from mozlog import get_default_logger, handlers
 
 from wptlogging import LogLevelRewriter
 
@@ -116,6 +116,8 @@ class BaseEnvironment(object):
         self.options = options if options is not None else {}
 
         self.cache_manager = multiprocessing.Manager()
+        self.routes = self.get_routes()
+        self.stash = serve.stash.StashServer()
 
     def __enter__(self):
         self.cache_manager.__enter__()
@@ -139,7 +141,7 @@ class LocalServerEnvironment(BaseEnvironment):
         self.routes = self.get_routes()
 
     def __enter__(self):
-        BaseEnvironment.__enter__(self)
+        self.stash.__enter__()
         self.ssl_env.__enter__()
         self.setup_server_logging()
         self.config = self.load_config()
@@ -153,11 +155,12 @@ class LocalServerEnvironment(BaseEnvironment):
     def __exit__(self, exc_type, exc_val, exc_tb):
         BaseEnvironment.__exit__(self, exc_type, exc_val, exc_tb)
         self.process_interrupts()
-        self.ssl_env.__exit__(exc_type, exc_val, exc_tb)
-
         for scheme, servers in self.servers.iteritems():
             for port, server in servers:
                 server.kill()
+        self.cache_manager.__exit__(exc_type, exc_val, exc_tb)
+        self.ssl_env.__exit__(exc_type, exc_val, exc_tb)
+        self.stash.__exit__()
 
     def ignore_interrupts(self):
         signal.signal(signal.SIGINT, signal.SIG_IGN)

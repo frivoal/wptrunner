@@ -11,7 +11,7 @@ import traceback
 from Queue import Empty
 from multiprocessing import Process, current_process, Queue
 
-from mozlog.structured import structuredlog
+from mozlog import structuredlog
 
 # Special value used as a sentinal in various commands
 Stop = object()
@@ -293,8 +293,8 @@ class TestRunnerManager(threading.Thread):
                                 # reason
                                 # Need to consider the unlikely case where one test causes the
                                 # runner process to repeatedly die
-                                self.logger.info("Last test did not complete, requeueing")
-                                self.requeue_test()
+                                self.logger.critical("Last test did not complete")
+                                break
                             self.logger.warning(
                                 "More tests found, but runner process died, restarting")
                             self.restart_count += 1
@@ -465,10 +465,6 @@ class TestRunnerManager(threading.Thread):
 
     def start_next_test(self):
         self.send_message("run_test")
-
-    def requeue_test(self):
-        self.test_source.requeue(self.test)
-        self.test = None
 
     def test_start(self, test):
         self.test = test
