@@ -212,7 +212,7 @@ class ReftestTest(Test):
     result_cls = ReftestResult
     test_type = "reftest"
 
-    def __init__(self, url, inherit_metadata, test_metadata, references, timeout=DEFAULT_TIMEOUT, path=None, protocol="http"):
+    def __init__(self, url, inherit_metadata, test_metadata, references, not_use_vivliostyle_for_reference, timeout=DEFAULT_TIMEOUT, path=None, protocol="http"):
         Test.__init__(self, url, inherit_metadata, test_metadata, timeout, path, protocol)
 
         for _, ref_type in references:
@@ -220,6 +220,7 @@ class ReftestTest(Test):
                 raise ValueError
 
         self.references = references
+        self.not_use_vivliostyle_for_reference = not_use_vivliostyle_for_reference
 
     @classmethod
     def from_manifest(cls,
@@ -242,6 +243,7 @@ class ReftestTest(Test):
                    inherit_metadata,
                    test_metadata,
                    [],
+                   manifest_test.not_use_vivliostyle_for_reference,
                    timeout=timeout,
                    path=manifest_test.path,
                    protocol="https" if hasattr(manifest_test, "https") and manifest_test.https else "http")
@@ -268,9 +270,10 @@ class ReftestTest(Test):
                                                       [],
                                                       None,
                                                       nodes,
-                                                      references_seen)
+                                                      references_seen,
+                                                      manifest_test.not_use_vivliostyle_for_reference)
             else:
-                reference = ReftestTest(ref_url, [], None, [])
+                reference = ReftestTest(ref_url, [], None, [], manifest_test.not_use_vivliostyle_for_reference)
 
             node.references.append((reference, ref_type))
 

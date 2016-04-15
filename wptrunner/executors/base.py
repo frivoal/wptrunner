@@ -154,7 +154,7 @@ class TestExecutor(object):
                                self.server_config["ports"][protocol][0])
 
     def test_url(self, test, is_testcase):
-        if is_testcase and self.run_vivliostyle:
+        if self.run_vivliostyle and (is_testcase or (not is_testcase and not test.not_use_vivliostyle_for_reference)):
             app_url = urlparse.urljoin(self.server_url(test.environment["protocol"]), "/vivliostyle.js/test/wpt/wpt-vivliostyle.html")
             test_url = urlparse.urljoin(self.server_url(test.environment["protocol"]), test.url)
             return app_url + "?x=" + test_url
