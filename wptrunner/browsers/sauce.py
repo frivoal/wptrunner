@@ -59,6 +59,9 @@ def read_sauce_config(config_path):
     data["capabilities"]["platform"] = config.get("browser", "platform")
     data["capabilities"]["version"] = config.get("browser", "version")
 
+    if config.has_option("sauce", "prerun_executable"):
+        data["capabilities"]["prerun"] = {"executable": config.get("sauce", "prerun_executable")}
+
     return data
 
 def check_args(kwargs):
