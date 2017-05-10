@@ -30,9 +30,9 @@ https://xn--lve-6lad.web-platform.test:8443
 
 # These are actually ws servers, but until mozprofile is
 # fixed we have to pretend that they are http servers
-http://web-platform.test:8888
-http://www.web-platform.test:8888
-http://www1.web-platform.test:8888
-http://www2.web-platform.test:8888
-http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8888
-http://xn--lve-6lad.web-platform.test:8888
+http://web-platform.test:8935
+http://www.web-platform.test:8935
+http://www1.web-platform.test:8935
+http://www2.web-platform.test:8935
+http://xn--n8j6ds53lwwkrqhv28a.web-platform.test:8935
+http://xn--lve-6lad.web-platform.test:8935
